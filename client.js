@@ -1,52 +1,5 @@
 import { CookieManager } from "./cookie.js";
 
-// TODO : remove these
-class OAuthConfig {
-  constructor(
-    clientId,
-    clientSecret,
-    redirectUri,
-    authorizationEndpoint,
-    tokenEndpoint,
-    userEndpoint,
-    scope,
-    provider
-  ) {
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
-    this.redirectUri = redirectUri;
-    this.authorizationEndpoint = authorizationEndpoint;
-    this.tokenEndpoint = tokenEndpoint;
-    this.userEndpoint = userEndpoint;
-    this.scope = scope;
-    this.provider = provider;
-  }
-}
-
-class TokenResponse {
-  constructor(accessToken, refreshToken, expiresIn, tokenType, scope) {
-    this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
-    this.expiresIn = expiresIn;
-    this.tokenType = tokenType;
-    this.scope = scope;
-  }
-}
-
-class UserInfoResponse {
-  constructor(name, email) {
-    this.name = name;
-    this.email = email;
-  }
-}
-
-class CallbackParams {
-  constructor(code, state) {
-    this.code = code;
-    this.state = state;
-  }
-}
-
 class OAuthError extends Error {
   constructor(message, code) {
     super(message);
@@ -55,21 +8,20 @@ class OAuthError extends Error {
   }
 }
 
-// Main OAuth Client Class
 class OAuthClient {
   constructor(config) {
     this.config = config;
     if (CookieManager.hasCookie("oauth_state")) {
       this.state = CookieManager.getCookie("oauth_state");
-      console.log("state cookie present",this.state)
+      console.log("state cookie present", this.state);
     } else {
       this.state = this.generateState();
-      CookieManager.setCookie("oauth_state", this.state)
-      console.log("new state cookie",this.state)
+      CookieManager.setCookie("oauth_state", this.state);
+      console.log("new state cookie", this.state);
     }
     if (CookieManager.hasCookie("oauth_code_verifier")) {
       this.codeVerifier = CookieManager.getCookie("oauth_code_verifier");
-      console.log("code verifier cookie present",this.codeVerifier)
+      console.log("code verifier cookie present", this.codeVerifier);
     } else {
       this.codeVerifier = this.generateCodeVerifier();
       CookieManager.setCookie("oauth_code_verifier", this.codeVerifier);
@@ -144,29 +96,26 @@ class OAuthClient {
     });
 
     try {
-      const response = await fetch(
-        this.config.tokenEndpoint,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: tokenParams.toString()
-        }
-      );
+      const response = await fetch(this.config.tokenEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: tokenParams.toString(),
+      });
 
       if (!response.ok) {
         throw new OAuthError("Token request failed", "token_request_failed");
       }
 
       const data = await response.json();
-      return new TokenResponse(
-        data.access_token,
-        data.refresh_token,
-        data.expires_in,
-        data.token_type,
-        data.scope
-      );
+      return {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresIn: data.expires_in,
+        tokenType: data.token_type,
+        scope: data.scope,
+      };
     } catch (error) {
       throw new OAuthError(
         error instanceof Error ? error.message : "Unknown error occurred",
@@ -179,7 +128,7 @@ class OAuthClient {
     const tokenParams = new URLSearchParams({
       grant_type: "refresh_token",
       refresh_token: refreshToken,
-      client_id: this.config.clientId
+      client_id: this.config.clientId,
     });
 
     try {
@@ -196,13 +145,13 @@ class OAuthClient {
       }
 
       const data = await response.json();
-      return new TokenResponse(
-        data.access_token,
-        data.refresh_token,
-        data.expires_in,
-        data.token_type,
-        data.scope
-      );
+      return {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresIn: data.expires_in,
+        tokenType: data.token_type,
+        scope: data.scope,
+      };
     } catch (error) {
       throw new OAuthError(
         error instanceof Error ? error.message : "Unknown error occurred",
@@ -225,7 +174,10 @@ class OAuthClient {
         );
       }
       const userInfo = await response.json();
-      return new UserInfoResponse(userInfo.name, userInfo.email);
+      return {
+        name: userInfo.name,
+        email: userInfo.email,
+      };
     } catch (error) {
       throw new OAuthError(
         error instanceof Error ? error.message : "Unknown error occurred",
@@ -255,30 +207,7 @@ class OAuthClient {
   }
 }
 
-// Provider configurations
-const OAUTH_PROVIDERS = {
-  AUTH0: (domain) => ({
-    authorizationEndpoint: `https://${domain}/authorize`,
-    tokenEndpoint: `https://${domain}/oauth/token`,
-    userEndpoint: `https://${domain}/authorize/userInfo`,
-    logoutEndpoint: `https://${domain}/v2/logout`,
-  }),
-  CLERK: {
-    authorizationEndpoint: "https://clerk.com/oauth/authorize",
-    tokenEndpoint: "https://clerk.com/oauth/token",
-  },
-  KINDE: (domain) => ({
-    authorizationEndpoint: `https://${domain}/oauth2/auth`,
-    tokenEndpoint: `https://${domain}/oauth2/token`,
-  }),
-};
-
 export {
-  OAuthConfig,
-  TokenResponse,
-  UserInfoResponse,
-  CallbackParams,
   OAuthError,
   OAuthClient,
-  OAUTH_PROVIDERS,
 };

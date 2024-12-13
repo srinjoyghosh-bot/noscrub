@@ -1,17 +1,7 @@
 // Demo Application (demo.js)
-import { OAuthClient, OAUTH_PROVIDERS } from "./client.js";
+import { OAuthClient } from "./client.js";
 import { CookieManager } from "./cookie.js";
-
-// TODO use environment variables
-const config = {
-  clientId: "UhoWTEGL6ni8OkxiKrAlypLwzk2fLNeW",
-  clientSecret:
-    "vmBdYcZJBR_vjrKWsvJcd93jvOhbORXb32vr-0wo9ZYM-5PJcFPY3zF0ZVdc17aL",
-  redirectUri: "http://localhost:5500/login.html",
-  scope: ["openid", "profile", "email"],
-  provider: "AUTH0",
-  ...OAUTH_PROVIDERS.AUTH0("dev-5qxilm1pa4djhji1.us.auth0.com"),
-};
+import { config } from "./config.js";
 
 class OAuthDemo {
   constructor() {
@@ -36,8 +26,6 @@ class OAuthDemo {
     console.log("access token",CookieManager.hasCookie("access_token") );
     console.log("access token expired?",CookieManager.isExpired("access_token"));
     
-    
-
     if (code && state) {
       this.handleCallback({ code, state });
     } else if (isLoggedIn) {
