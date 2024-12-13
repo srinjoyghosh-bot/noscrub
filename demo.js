@@ -1,5 +1,6 @@
 // Demo Application (demo.js)
 import { OAuthClient, OAUTH_PROVIDERS } from "./client.js";
+import { CookieManager } from "./cookie.js";
 
 const config = {
   clientId: "UhoWTEGL6ni8OkxiKrAlypLwzk2fLNeW",
@@ -14,6 +15,7 @@ const config = {
 class OAuthDemo {
   constructor() {
     this.oauthClient = new OAuthClient(config);
+    // TODO : remove token storage
     this.tokenStorage =
       typeof localStorage !== "undefined" ? localStorage : new Storage();
     this.initializeUI();
@@ -34,9 +36,13 @@ class OAuthDemo {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
+    const isLoggedIn = CookieManager.hasCookie("access_token");
 
     if (code && state) {
       this.handleCallback({ code, state });
+    } else if (isLoggedIn) {
+      //TODO : also check expiry
+      this.showUserInfo();
     }
   }
 
@@ -48,20 +54,6 @@ class OAuthDemo {
     } catch (error) {
       console.error("Login failed:", error);
       this.showError("Failed to initialize login flow");
-    }
-  }
-
-  async handleLogout() {
-    try {
-      this.hideError();
-      this.startLoader();
-      await this.oauthClient.logoutUser();
-      // TODO:  show login section
-      // TODO:  hide user info section
-      this.stopLoader();
-    } catch (error) {
-      console.error("Logout failed:", error);
-      this.showError("Failed to log user out");
     }
   }
 
@@ -80,6 +72,7 @@ class OAuthDemo {
 
   saveTokens(tokens) {
     this.tokenStorage.setItem("access_token", tokens.accessToken);
+    CookieManager.setCookie("access_token",tokens.accessToken);
     if (tokens.refreshToken) {
       this.tokenStorage.setItem("refresh_token", tokens.refreshToken);
     }
@@ -90,7 +83,7 @@ class OAuthDemo {
   }
 
   async showUserInfo() {
-    const accessToken = this.tokenStorage.getItem("access_token");
+    const accessToken = CookieManager.getCookie("access_token");
     if (!accessToken) {
       this.showError("No access token found");
       return;
@@ -117,6 +110,11 @@ class OAuthDemo {
 
         loginSection.style.display = "block";
         userInfoSection.classList.remove("visible");
+
+        // clean up cookies
+        CookieManager.deleteCookie("access_token");
+        CookieManager.deleteCookie("oauth_state");
+        CookieManager.deleteCookie("oauth_code_verifier")
       });
       this.stopLoader();
     } catch (error) {

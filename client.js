@@ -1,3 +1,4 @@
+import { CookieManager } from "./cookie.js";
 class OAuthConfig {
   constructor(
     clientId,
@@ -56,22 +57,27 @@ class OAuthError extends Error {
 class OAuthClient {
   constructor(config) {
     this.config = config;
-    const sessionState = sessionStorage.getItem("oauth_state");
-    console.log("session state", sessionState);
-    if (sessionState) {
-      this.state = sessionState;
+    // const sessionState = sessionStorage.getItem("oauth_state");
+    // console.log("session state", sessionState);
+    // const cookieState=CookieManager.getCookie("oauth_state")
+    if (CookieManager.hasCookie("oauth_state")) {
+      this.state = CookieManager.getCookie("oauth_state");
+      console.log("state cookie present",this.state)
     } else {
       this.state = this.generateState();
-      sessionStorage.setItem("oauth_state", this.state);
+      CookieManager.setCookie("oauth_state", this.state)
+      console.log("new state cookie",this.state)
+      // sessionStorage.setItem("oauth_state", this.state);
     }
-    const sessionCodeVerifier = sessionStorage.getItem("oauth_code_verifier");
-    console.log("session code verifier", sessionCodeVerifier);
-    if (sessionCodeVerifier) {
-      this.codeVerifier = sessionCodeVerifier;
+    // const sessionCodeVerifier = sessionStorage.getItem("oauth_code_verifier");
+    // console.log("session code verifier", sessionCodeVerifier);
+    if (CookieManager.hasCookie("oauth_code_verifier")) {
+      this.codeVerifier = CookieManager.getCookie("oauth_code_verifier");
+      console.log("code verifier cookie present",this.codeVerifier)
     } else {
       this.codeVerifier = this.generateCodeVerifier();
-      sessionStorage.setItem("oauth_code_verifier", this.codeVerifier);
-      console.log("new session code verifier", this.codeVerifier);
+      CookieManager.setCookie("oauth_code_verifier", this.codeVerifier);
+      console.log("new cookie code verifier", this.codeVerifier);
     }
   }
 
