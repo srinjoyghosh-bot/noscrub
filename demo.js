@@ -2,6 +2,7 @@
 import { OAuthClient, OAUTH_PROVIDERS } from "./client.js";
 import { CookieManager } from "./cookie.js";
 
+// TODO use environment variables
 const config = {
   clientId: "UhoWTEGL6ni8OkxiKrAlypLwzk2fLNeW",
   clientSecret:
@@ -15,9 +16,6 @@ const config = {
 class OAuthDemo {
   constructor() {
     this.oauthClient = new OAuthClient(config);
-    // TODO : remove token storage
-    this.tokenStorage =
-      typeof localStorage !== "undefined" ? localStorage : new Storage();
     this.initializeUI();
   }
 
@@ -36,12 +34,13 @@ class OAuthDemo {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
-    const isLoggedIn = CookieManager.hasCookie("access_token");
+    const isLoggedIn =
+      CookieManager.hasCookie("access_token") &&
+      !CookieManager.isExpired("access_token");
 
     if (code && state) {
       this.handleCallback({ code, state });
     } else if (isLoggedIn) {
-      //TODO : also check expiry
       this.showUserInfo();
     }
   }
@@ -67,19 +66,17 @@ class OAuthDemo {
     } catch (error) {
       console.error("Callback handling failed:", error);
       this.showError("Authentication failed");
+    } finally {
+      CookieManager.deleteCookie("oauth_state");
+      // CookieManager.deleteCookie("oauth_code_verifier");
     }
   }
 
   saveTokens(tokens) {
-    this.tokenStorage.setItem("access_token", tokens.accessToken);
-    CookieManager.setCookie("access_token",tokens.accessToken);
+    CookieManager.setCookie("access_token", tokens.accessToken);
     if (tokens.refreshToken) {
-      this.tokenStorage.setItem("refresh_token", tokens.refreshToken);
+      CookieManager.setCookie("refresh_token", tokens.refreshToken);
     }
-    this.tokenStorage.setItem(
-      "expires_at",
-      String(Date.now() + tokens.expiresIn * 1000)
-    );
   }
 
   async showUserInfo() {
@@ -114,7 +111,7 @@ class OAuthDemo {
         // clean up cookies
         CookieManager.deleteCookie("access_token");
         CookieManager.deleteCookie("oauth_state");
-        CookieManager.deleteCookie("oauth_code_verifier")
+        CookieManager.deleteCookie("oauth_code_verifier");
       });
       this.stopLoader();
     } catch (error) {
