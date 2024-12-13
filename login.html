@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Login Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f6fa;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-btn {
+            background: #0984e3;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: #0766b1;
+        }
+
+        .user-info {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .user-info.visible {
+            display: block;
+        }
+
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            background: #dfe6e9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #636e72;
+        }
+
+        .user-details {
+            text-align: left;
+            margin-top: 1.5rem;
+        }
+
+        .user-details p {
+            margin: 0.5rem 0;
+            color: #2d3436;
+        }
+
+        .user-details strong {
+            color: #0984e3;
+        }
+
+        .logout-btn {
+            background: #ff7675;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #d63031;
+        }
+
+        .loader {
+            display: none;
+            margin: 1rem auto;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0984e3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-container {
+            display: none;
+            background-color: #fff3f3;
+            border: 1px solid #ff7675;
+            border-radius: 5px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: left;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .error-container.visible {
+            display: block;
+        }
+
+        .error-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .error-title {
+            color: #d63031;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .error-message {
+            color: #636e72;
+            font-size: 0.9rem;
+        }
+
+        .close-error {
+            background: none;
+            border: none;
+            color: #636e72;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.2rem;
+        }
+
+        .close-error:hover {
+            color: #2d3436;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="errorContainer" class="error-container">
+            <div class="error-header">
+                <div class="error-title">
+                    <span>⚠️</span>
+                    <span>Error</span>
+                </div>
+                <button class="close-error" id="closeError">×</button>
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+        <div id="loginSection">
+            <h2>Welcome</h2>
+            <p style="margin: 1rem 0;">Please login to continue</p>
+            <button class="login-btn" id="login-btn">Login with Redirect</button>
+            <div id="loader" class="loader"></div>
+        </div>
+
+        <div id="userInfo" class="user-info">
+            <div class="user-avatar">
+                👤
+            </div>
+            <h3>Welcome Back!</h3>
+            <div class="user-details">
+                <p><strong>Name:</strong> <span id="userName"></span></p>
+                <p><strong>Email:</strong> <span id="userEmail"></span></p>
+            </div>
+            <button class="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script type="module" src="demo.js">
+        // class OAuthDemo {
+        //     constructor() {
+        //         // OAuth configuration
+        //         this.clientId = 'your-client-id';
+        //         this.redirectUri = window.location.origin;
+        //         this.scope = 'email profile';
+        //     }
+
+        //     async initiateLogin() {
+        //         try {
+        //             // Simulate OAuth flow
+        //             const loader = document.getElementById('loader');
+        //             loader.style.display = 'block';
+
+        //             // Simulate API call delay
+        //             await new Promise(resolve => setTimeout(resolve, 1500));
+
+        //             // Mock successful OAuth response
+        //             const mockOAuthResponse = {
+        //                 access_token: 'mock_access_token',
+        //                 user: {
+        //                     name: 'John Doe',
+        //                     email: 'john.doe@example.com'
+        //                 }
+        //             };
+
+        //             loader.style.display = 'none';
+        //             return mockOAuthResponse;
+        //         } catch (error) {
+        //             console.error('OAuth login failed:', error);
+        //             loader.style.display = 'none';
+        //             throw error;
+        //         }
+        //     }
+
+        //     async getUserInfo(accessToken) {
+        //         // In a real implementation, this would make an API call to get user info
+        //         // Using the access token
+        //         return {
+        //             name: 'John Doe',
+        //             email: 'john.doe@example.com'
+        //         };
+        //     }
+        // }
+
+        // // Initialize OAuth
+        // const oAuthDemo = new OAuthDemo();
+
+        // async function initiateOAuthLogin() {
+        //     try {
+        //         const response = await oAuthDemo.initiateLogin();
+        //         if (response.access_token) {
+        //             const userInfo = await oAuthDemo.getUserInfo(response.access_token);
+        //             displayUserInfo(userInfo);
+        //             storeUserSession(response.access_token, userInfo);
+        //         }
+        //     } catch (error) {
+        //         console.error('Login failed:', error);
+        //         alert('Login failed. Please try again.');
+        //     }
+        // }
+
+        // function displayUserInfo(userInfo) {
+        //     const loginSection = document.getElementById('loginSection');
+        //     const userInfoSection = document.getElementById('userInfo');
+        //     const userName = document.getElementById('userName');
+        //     const userEmail = document.getElementById('userEmail');
+
+        //     loginSection.style.display = 'none';
+        //     userInfoSection.classList.add('visible');
+        //     userName.textContent = userInfo.name;
+        //     userEmail.textContent = userInfo.email;
+        // }
+
+        // function storeUserSession(accessToken, userInfo) {
+        //     localStorage.setItem('accessToken', accessToken);
+        //     localStorage.setItem('userInfo', JSON.stringify(userInfo));
+        // }
+
+        // function logout() {
+        //     const loginSection = document.getElementById('loginSection');
+        //     const userInfoSection = document.getElementById('userInfo');
+
+        //     loginSection.style.display = 'block';
+        //     userInfoSection.classList.remove('visible');
+
+        //     localStorage.removeItem('accessToken');
+        //     localStorage.removeItem('userInfo');
+        // }
+
+        // // Check for existing session on page load
+        // window.onload = function() {
+        //     const accessToken = localStorage.getItem('accessToken');
+        //     if (accessToken) {
+        //         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        //         displayUserInfo(userInfo);
+        //     }
+        // };
+    </script>
+</body>
+</html>
