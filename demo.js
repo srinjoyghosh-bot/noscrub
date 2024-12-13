@@ -2,9 +2,9 @@
 import { OAuthClient, OAUTH_PROVIDERS } from "./client.js";
 
 const config = {
-  clientId: "xw8X14NepGAmrTeLrm3FelB11aGDbBjx",
+  clientId: "UhoWTEGL6ni8OkxiKrAlypLwzk2fLNeW",
   clientSecret:
-    "Sknr01sm1GhKP5AANYqPn33b3Yi-vulv2Wk6H456-4gNuGFEfz0wp15FPDI3anQF",
+    "vmBdYcZJBR_vjrKWsvJcd93jvOhbORXb32vr-0wo9ZYM-5PJcFPY3zF0ZVdc17aL",
   redirectUri: "http://localhost:5500/login.html",
   scope: ["openid", "profile", "email"],
   provider: "AUTH0",
@@ -12,7 +12,6 @@ const config = {
 };
 
 class OAuthDemo {
-
   constructor() {
     this.oauthClient = new OAuthClient(config);
     this.tokenStorage =
@@ -105,11 +104,20 @@ class OAuthDemo {
       const userInfoSection = document.getElementById("userInfo");
       const userName = document.getElementById("userName");
       const userEmail = document.getElementById("userEmail");
+      const logoutButton = document.getElementById("logoutBtn");
 
       loginSection.style.display = "none";
       userInfoSection.classList.add("visible");
       userName.textContent = userInfo.name;
       userEmail.textContent = userInfo.email;
+      logoutButton.addEventListener("click", () => {
+        window.location.href = `${config.logoutEndpoint}?client_id=${config.clientId}`;
+        const loginSection = document.getElementById("loginSection");
+        const userInfoSection = document.getElementById("userInfo");
+
+        loginSection.style.display = "block";
+        userInfoSection.classList.remove("visible");
+      });
       this.stopLoader();
     } catch (error) {
       console.error("Failed to fetch user info:", error);

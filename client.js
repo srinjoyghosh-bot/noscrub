@@ -138,18 +138,18 @@ class OAuthClient {
       code: params.code,
       redirect_uri: this.config.redirectUri,
       client_id: this.config.clientId,
-      client_secret: this.config.clientSecret,
       code_verifier: this.codeVerifier,
     });
 
     try {
       const response = await fetch(
-        `${this.config.tokenEndpoint}?${tokenParams.toString()}`,
+        this.config.tokenEndpoint,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
+          body: tokenParams.toString()
         }
       );
 
@@ -185,7 +185,7 @@ class OAuthClient {
 
     try {
       const response = await fetch(this.config.tokenEndpoint, {
-        method: "POST",
+        method: "None",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
