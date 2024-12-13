@@ -25,11 +25,6 @@ class OAuthDemo {
       loginButton.addEventListener("click", () => this.handleLogin());
     }
 
-    const logoutButton = document.getElementById("logout-btn");
-    if (logoutButton) {
-      logoutButton.addEventListener("click", () => this.handleLogout());
-    }
-
     // Check if we're handling a callback
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
@@ -37,6 +32,11 @@ class OAuthDemo {
     const isLoggedIn =
       CookieManager.hasCookie("access_token") &&
       !CookieManager.isExpired("access_token");
+    
+    console.log("access token",CookieManager.hasCookie("access_token") );
+    console.log("access token expired?",CookieManager.isExpired("access_token"));
+    
+    
 
     if (code && state) {
       this.handleCallback({ code, state });
@@ -46,6 +46,7 @@ class OAuthDemo {
   }
 
   async handleLogin() {
+    if(this.isLoading()) return;
     try {
       this.hideError();
       const authUrl = await this.oauthClient.startAuthFlow();
@@ -58,6 +59,7 @@ class OAuthDemo {
 
   async handleCallback(params) {
     try {
+      this.startLoader();
       const tokens = await this.oauthClient.handleCallback(params);
       this.saveTokens(tokens);
       this.showUserInfo();
@@ -67,7 +69,8 @@ class OAuthDemo {
       console.error("Callback handling failed:", error);
       this.showError("Authentication failed");
     } finally {
-      CookieManager.deleteCookie("oauth_state");
+      this.stopLoader();
+      // CookieManager.deleteCookie("oauth_state");
       // CookieManager.deleteCookie("oauth_code_verifier");
     }
   }
@@ -128,6 +131,11 @@ class OAuthDemo {
   stopLoader() {
     const loader = document.getElementById("loader");
     loader.style.display = "none";
+  }
+
+  isLoading(){
+    const loader = document.getElementById("loader");
+    return loader.style.display === "block";
   }
 
   showError(message) {

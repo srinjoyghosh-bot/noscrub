@@ -2,13 +2,14 @@ class CookieManager {
     static setCookie(name, value, expirationDays = 1, expiryDate = null) {
         let expires;
         if (expiryDate instanceof Date) {
-            expires = "expires=" + expiryDate.toUTCString();
+            expires =  expiryDate.toUTCString();
         } else {
             const d = new Date();
             d.setTime(d.getTime() + (expirationDays * 24 * 60 * 60 * 1000));
-            expires = "expires=" + d.toUTCString();
+            expires =  d.toUTCString();
         }
-        document.cookie = `${name}=${value};${expires};path=/;Secure;SameSite=Strict`;
+        document.cookie = `${name}=${value};expires=${expires};path=/;Secure;SameSite=Strict`;
+        document.cookie = `${name}-expires=${expires};expires=${expires};path=/;Secure;SameSite=Strict`;
     }
 
     static getCookie(name) {
@@ -29,12 +30,14 @@ class CookieManager {
 
     static getCookieExpiryDate(name) {
         const cookieString = document.cookie.split(';').find(cookie => cookie.trim().startsWith(`${name}=`));
+        console.log("cookieString",cookieString);
+        
         if (!cookieString) return null;
 
         // Find the expires attribute
         const expiresMatch = document.cookie.split(';')
-            .find(cookie => cookie.trim().toLowerCase().startsWith('expires='));
-        
+            .find(cookie => cookie.trim().toLowerCase().startsWith(`${name}-expires=`));
+        console.log("expiresMatch",expiresMatch);
         if (!expiresMatch) return null;
 
         const expiryDate = new Date(expiresMatch.split('=')[1]);
@@ -44,10 +47,12 @@ class CookieManager {
     static isExpired(name) {
         // First check if cookie exists
         if (!this.hasCookie(name)) {
+            console.log("isExpired not have cookie");     
             return true;
         }
 
         const expiryDate = this.getCookieExpiryDate(name);
+        console.log("isExpired expiryDate",expiryDate);
         if (!expiryDate) return true;
 
         return new Date() > expiryDate;

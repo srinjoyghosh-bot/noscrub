@@ -1,4 +1,6 @@
 import { CookieManager } from "./cookie.js";
+
+// TODO : remove these
 class OAuthConfig {
   constructor(
     clientId,
@@ -158,8 +160,6 @@ class OAuthClient {
       }
 
       const data = await response.json();
-      sessionStorage.removeItem("oauth_state");
-      sessionStorage.removeItem("oauth_code_verifier");
       return new TokenResponse(
         data.access_token,
         data.refresh_token,
@@ -179,8 +179,7 @@ class OAuthClient {
     const tokenParams = new URLSearchParams({
       grant_type: "refresh_token",
       refresh_token: refreshToken,
-      client_id: this.config.clientId,
-      client_secret: this.config.clientSecret,
+      client_id: this.config.clientId
     });
 
     try {
