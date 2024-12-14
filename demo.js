@@ -21,6 +21,7 @@ class OAuthDemo {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
+    // checking if user is already logged in
     const isLoggedIn =
       CookieManager.hasCookie("access_token") &&
       !CookieManager.isExpired("access_token");
