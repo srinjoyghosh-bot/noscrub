@@ -17,7 +17,7 @@ class OAuthDemo {
       loginButton.addEventListener("click", () => this.handleLogin());
     }
 
-    // Check if we're handling a callback
+    // checking if we're handling a auth callback
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
@@ -56,7 +56,7 @@ class OAuthDemo {
       const tokens = await this.oauthClient.handleCallback(params);
       this.saveTokens(tokens);
       this.showUserInfo();
-      // Clean up URL
+      
       window.history.replaceState({}, document.title, window.location.pathname);
     } catch (error) {
       console.error("Callback handling failed:", error);
@@ -109,8 +109,6 @@ class OAuthDemo {
 
         // clean up cookies
         CookieManager.deleteCookie("access_token");
-        // CookieManager.deleteCookie("oauth_state");
-        // CookieManager.deleteCookie("oauth_code_verifier");
       });
       this.stopLoader();
     } catch (error) {
@@ -149,7 +147,6 @@ class OAuthDemo {
   }
 }
 
-// Initialize the demo when the DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   console.log("STARTING");
   new OAuthDemo();

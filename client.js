@@ -48,18 +48,11 @@ class OAuthClient {
   }
 
   async generateCodeChallenge(verifier) {
-    // Convert verifier string to UTF-8 encoded Uint8Array
     const encoder = new TextEncoder();
     const data = encoder.encode(verifier);
-
-    // Generate SHA-256 hash
     const hash = await crypto.subtle.digest("SHA-256", data);
-
-    // Convert hash to Base64URL string
     const hashArray = Array.from(new Uint8Array(hash));
     const hashBase64 = btoa(String.fromCharCode.apply(null, hashArray));
-
-    // Convert Base64 to Base64URL by replacing characters
     return hashBase64
       .replace(/\+/g, "-")
       .replace(/\//g, "_")

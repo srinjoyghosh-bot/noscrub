@@ -34,7 +34,6 @@ class CookieManager {
         
         if (!cookieString) return null;
 
-        // Find the expires attribute
         const expiresMatch = document.cookie.split(';')
             .find(cookie => cookie.trim().toLowerCase().startsWith(`${name}-expires=`));
         console.log("expiresMatch",expiresMatch);
@@ -45,7 +44,6 @@ class CookieManager {
     }
 
     static isExpired(name) {
-        // First check if cookie exists
         if (!this.hasCookie(name)) {
             console.log("isExpired not have cookie");     
             return true;
