@@ -18,10 +18,10 @@ class CookieManager {
         const cookieArray = decodedCookie.split(';');
         
         for(let cookie of cookieArray) {
-            while (cookie.charAt(0) === ' ') {
+            while (cookie.startsWith(' ')) {
                 cookie = cookie.substring(1);
             }
-            if (cookie.indexOf(cookieName) === 0) {
+            if (cookie.startsWith(cookieName)) {
                 return cookie.substring(cookieName.length, cookie.length);
             }
         }

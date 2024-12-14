@@ -11,15 +11,17 @@ class OAuthError extends Error {
 class OAuthClient {
   constructor(config) {
     this.config = config;
-    if (CookieManager.hasCookie("oauth_state")) {
-      this.state = CookieManager.getCookie("oauth_state");
-      console.log("state cookie present", this.state);
+
+    const sessionState=localStorage.getItem("oauth_state");
+    if (sessionState) {
+      this.state = sessionState;
+      console.log("state present", this.state);
     } else {
       this.state = this.generateState();
-      CookieManager.setCookie("oauth_state", this.state);
-      console.log("new state cookie", this.state);
+      localStorage.setItem("oauth_state", this.state);
+      console.log("new state", this.state);
     }
-    if (CookieManager.hasCookie("oauth_code_verifier")) {
+    if (CookieManager.hasCookie("oauth_code_verifier") && !CookieManager.isExpired("oauth_code_verifier")) {
       this.codeVerifier = CookieManager.getCookie("oauth_code_verifier");
       console.log("code verifier cookie present", this.codeVerifier);
     } else {

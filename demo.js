@@ -10,6 +10,8 @@ class OAuthDemo {
   }
 
   initializeUI() {
+    console.log("In initializeUI");
+    
     const loginButton = document.getElementById("login-btn");
     if (loginButton) {
       loginButton.addEventListener("click", () => this.handleLogin());
@@ -34,6 +36,8 @@ class OAuthDemo {
   }
 
   async handleLogin() {
+    console.log("in handleLogin");
+    
     if(this.isLoading()) return;
     try {
       this.hideError();
@@ -46,6 +50,7 @@ class OAuthDemo {
   }
 
   async handleCallback(params) {
+    console.log("in handleCallback");
     try {
       this.startLoader();
       const tokens = await this.oauthClient.handleCallback(params);
@@ -58,12 +63,13 @@ class OAuthDemo {
       this.showError("Authentication failed");
     } finally {
       this.stopLoader();
-      // CookieManager.deleteCookie("oauth_state");
-      // CookieManager.deleteCookie("oauth_code_verifier");
+      localStorage.removeItem("oauth_state");
+      CookieManager.deleteCookie("oauth_code_verifier");
     }
   }
 
   saveTokens(tokens) {
+    console.log("in saveTokens");
     CookieManager.setCookie("access_token", tokens.accessToken);
     if (tokens.refreshToken) {
       CookieManager.setCookie("refresh_token", tokens.refreshToken);
@@ -71,6 +77,8 @@ class OAuthDemo {
   }
 
   async showUserInfo() {
+    console.log("in showUserInfo");
+    
     const accessToken = CookieManager.getCookie("access_token");
     if (!accessToken) {
       this.showError("No access token found");
@@ -101,8 +109,8 @@ class OAuthDemo {
 
         // clean up cookies
         CookieManager.deleteCookie("access_token");
-        CookieManager.deleteCookie("oauth_state");
-        CookieManager.deleteCookie("oauth_code_verifier");
+        // CookieManager.deleteCookie("oauth_state");
+        // CookieManager.deleteCookie("oauth_code_verifier");
       });
       this.stopLoader();
     } catch (error) {
