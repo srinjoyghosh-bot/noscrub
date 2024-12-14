@@ -1,5 +1,4 @@
 import { CookieManager } from "./cookie.js";
-import { Config } from "./config.js";
 
 /**
  * Custom error class for OAuth-specific errors
@@ -21,7 +20,7 @@ class OAuthClient {
   /**
    * Creates an instance of OAuthClient
    * @constructor
-   * @param {Config} config - The configuration object
+   * @param config - The configuration object
    */
   constructor(config) {
     this.config = config;
