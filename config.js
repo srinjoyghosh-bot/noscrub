@@ -1,3 +1,16 @@
+/**
+ * OAUTH2 Configuration
+ * 
+ * @typedef {Object} Config
+ * @property {string} clientId - The OAuth client ID
+ * @property {string} redirectUri - The callback URL
+ * @property {string[]} scope - Array of permission scopes
+ * @property {string} authorizationEndpoint - Authorization URL
+ * @property {string} provider - chosen OAUTH2 provider 
+ * @property {string} tokenEndpoint - Token fetch and refresh URL
+ * @property {string} userEndpoint - URL for fetching user info
+ * @property {string} logoutEndpoint - URL for user logout
+ */
 const config = {
   clientId: "UhoWTEGL6ni8OkxiKrAlypLwzk2fLNeW",
   redirectUri: "http://localhost:5500/login.html",

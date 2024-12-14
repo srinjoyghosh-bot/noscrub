@@ -3,12 +3,24 @@ import { OAuthClient } from "./client.js";
 import { CookieManager } from "./cookie.js";
 import { config } from "./config.js";
 
+/**
+ * @class OAuthDemo
+ * @classdesc A demonstration class that implements OAuth2 authentication flow with UI integration.
+ * Handles user authentication, token management, and user interface updates.
+ */
 class OAuthDemo {
+  /**
+   * Creates an instance of OAuthDemo and initializes the UI.
+   * @constructor
+   */
   constructor() {
     this.oauthClient = new OAuthClient(config);
     this.initializeUI();
   }
 
+  /**
+   * Initializes the UI components and checks authentication state.
+   */
   initializeUI() {
     console.log("In initializeUI");
 
@@ -47,6 +59,12 @@ class OAuthDemo {
     }
   }
 
+  /**
+   * Handles the login button click event.
+   * Initiates the OAuth authorization flow.
+   *
+   * @async
+   */
   async handleLogin() {
     console.log("in handleLogin");
 
@@ -61,6 +79,15 @@ class OAuthDemo {
     }
   }
 
+  /**
+   * Processes the OAuth callback after successful authorization.
+   * Saves tokens and updates UI with user information.
+   *
+   * @async
+   * @param {Object} params - Callback parameters
+   * @param {string} params.code - Authorization code
+   * @param {string} params.state - State parameter for CSRF protection
+   */
   async handleCallback(params) {
     console.log("in handleCallback");
     try {
@@ -80,6 +107,11 @@ class OAuthDemo {
     }
   }
 
+  /**
+   * Saves access and refresh tokens to cookies.
+   *
+   * @param {TokenResponse} tokens - Token response from OAuth provider
+   */
   saveTokens(tokens) {
     console.log("in saveTokens");
     CookieManager.setCookie("access_token", tokens.accessToken);
@@ -88,6 +120,11 @@ class OAuthDemo {
     }
   }
 
+  /**
+   * Refreshes the access token using the stored refresh token.
+   *
+   * @async
+   */
   async refreshTokens() {
     this.startLoader();
     const refreshToken = CookieManager.getCookie("refresh_token");
@@ -103,6 +140,12 @@ class OAuthDemo {
     }
   }
 
+  /**
+   * Fetches and displays user information.
+   * Updates UI to show user profile and logout button.
+   *
+   * @async
+   */
   async showUserInfo() {
     console.log("in showUserInfo");
 
@@ -145,21 +188,35 @@ class OAuthDemo {
     }
   }
 
+  /**
+   * Shows the loading spinner.
+   */
   startLoader() {
     const loader = document.getElementById("loader");
     loader.style.display = "block";
   }
 
+  /**
+   * Hides the loading spinner.
+   */
   stopLoader() {
     const loader = document.getElementById("loader");
     loader.style.display = "none";
   }
 
+  /**
+   * Checks if the loader is currently visible.
+   * @returns {boolean} True if loading, false otherwise
+   */
   isLoading() {
     const loader = document.getElementById("loader");
     return loader.style.display === "block";
   }
 
+  /**
+   * Displays an error message to the user.
+   * @param {string} message - Error message to display
+   */
   showError(message) {
     const errorContainer = document.getElementById("errorContainer");
     const errorMessage = document.getElementById("errorMessage");
@@ -169,6 +226,10 @@ class OAuthDemo {
       .getElementById("closeError")
       .addEventListener("click", () => this.hideError());
   }
+
+  /**
+   * Hides the error message container.
+   */
   hideError() {
     const errorContainer = document.getElementById("errorContainer");
     errorContainer.classList.remove("visible");
