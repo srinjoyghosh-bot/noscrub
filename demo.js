@@ -21,6 +21,7 @@ class OAuthDemo {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
+
     // checking if user is already logged in
     const hasAccessToken =
       CookieManager.hasCookie("access_token") &&
@@ -88,6 +89,7 @@ class OAuthDemo {
   }
 
   async refreshTokens() {
+    this.startLoader();
     const refreshToken = CookieManager.getCookie("refresh_token");
     if (!refreshToken) return;
     try {
@@ -96,6 +98,8 @@ class OAuthDemo {
     } catch (error) {
       console.error("Token refresh failed:", error);
       this.showError("Token refresh failed");
+    } finally {
+      this.stopLoader();
     }
   }
 
