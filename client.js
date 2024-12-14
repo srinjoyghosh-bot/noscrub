@@ -128,7 +128,7 @@ class OAuthClient {
 
     try {
       const response = await fetch(this.config.tokenEndpoint, {
-        method: "None",
+        method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },

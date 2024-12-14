@@ -11,7 +11,7 @@ class OAuthDemo {
 
   initializeUI() {
     console.log("In initializeUI");
-    
+
     const loginButton = document.getElementById("login-btn");
     if (loginButton) {
       loginButton.addEventListener("click", () => this.handleLogin());
@@ -22,24 +22,34 @@ class OAuthDemo {
     const code = urlParams.get("code");
     const state = urlParams.get("state");
     // checking if user is already logged in
-    const isLoggedIn =
+    const hasAccessToken =
       CookieManager.hasCookie("access_token") &&
       !CookieManager.isExpired("access_token");
-    
-    console.log("access token",CookieManager.hasCookie("access_token") );
-    console.log("access token expired?",CookieManager.isExpired("access_token"));
-    
+
+    const hasRefreshToken =
+      CookieManager.hasCookie("refresh_token") &&
+      !CookieManager.isExpired("refresh_token");
+
+    console.log("access token", CookieManager.hasCookie("access_token"));
+    console.log(
+      "access token expired?",
+      CookieManager.isExpired("access_token")
+    );
+
     if (code && state) {
       this.handleCallback({ code, state });
-    } else if (isLoggedIn) {
+    } else if (hasAccessToken) {
+      this.showUserInfo();
+    } else if (!hasAccessToken && hasRefreshToken) {
+      this.refreshTokens();
       this.showUserInfo();
     }
   }
 
   async handleLogin() {
     console.log("in handleLogin");
-    
-    if(this.isLoading()) return;
+
+    if (this.isLoading()) return;
     try {
       this.hideError();
       const authUrl = await this.oauthClient.startAuthFlow();
@@ -57,7 +67,7 @@ class OAuthDemo {
       const tokens = await this.oauthClient.handleCallback(params);
       this.saveTokens(tokens);
       this.showUserInfo();
-      
+
       window.history.replaceState({}, document.title, window.location.pathname);
     } catch (error) {
       console.error("Callback handling failed:", error);
@@ -77,9 +87,21 @@ class OAuthDemo {
     }
   }
 
+  async refreshTokens() {
+    const refreshToken = CookieManager.getCookie("refresh_token");
+    if (!refreshToken) return;
+    try {
+      const tokens = await this.oauthClient.refreshToken(refreshToken);
+      this.saveTokens(tokens);
+    } catch (error) {
+      console.error("Token refresh failed:", error);
+      this.showError("Token refresh failed");
+    }
+  }
+
   async showUserInfo() {
     console.log("in showUserInfo");
-    
+
     const accessToken = CookieManager.getCookie("access_token");
     if (!accessToken) {
       this.showError("No access token found");
@@ -110,6 +132,7 @@ class OAuthDemo {
 
         // clean up cookies
         CookieManager.deleteCookie("access_token");
+        CookieManager.deleteCookie("refresh_token");
       });
       this.stopLoader();
     } catch (error) {
@@ -128,7 +151,7 @@ class OAuthDemo {
     loader.style.display = "none";
   }
 
-  isLoading(){
+  isLoading() {
     const loader = document.getElementById("loader");
     return loader.style.display === "block";
   }
