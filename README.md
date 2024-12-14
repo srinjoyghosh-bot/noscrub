@@ -48,7 +48,6 @@ noscrub/
 
 The included demo (`demo.js`) showcases:
 - Basic OAuth2 authorization flow
-- Token handling
-- Cookie-based session management
+- Token handling with Cookies
 - Simple login page implementation
 
