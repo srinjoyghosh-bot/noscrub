@@ -1,7 +1,5 @@
 const config = {
   clientId: "UhoWTEGL6ni8OkxiKrAlypLwzk2fLNeW",
-  clientSecret:
-    "vmBdYcZJBR_vjrKWsvJcd93jvOhbORXb32vr-0wo9ZYM-5PJcFPY3zF0ZVdc17aL",
   redirectUri: "http://localhost:5500/login.html",
   scope: ["openid", "profile", "email","offline_access"],
   provider: "AUTH0",
