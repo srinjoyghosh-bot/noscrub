@@ -49,10 +49,18 @@ class OAuthDemo {
       "access token expired?",
       CookieManager.isExpired("access_token")
     );
-    if(error && error==="access_denied"){
-      this.showError("Please provide profile and email scope");
-    }
-    else if (code && state) {
+    if (error && error === "access_denied") {
+      const loginSection = document.getElementById("loginSection");
+      loginSection.style.display = "none";
+      const scopeSection = document.getElementById("scopeSection");
+      scopeSection.style.display = "block";
+      const addScopeButton=document.getElementById("addScopeButton");
+      addScopeButton.addEventListener("click",()=> this.handleScopeInput());
+      const cancelButton=document.getElementById("scopeAddCancelButton");
+      cancelButton.addEventListener("click",()=>{
+        window.location.href=config.redirectUri;
+      })
+    } else if (code && state) {
       this.handleCallback({ code, state });
     } else if (hasAccessToken) {
       this.showUserInfo();
@@ -80,6 +88,66 @@ class OAuthDemo {
       console.error("Login failed:", error);
       this.showError("Failed to initialize login flow");
     }
+  }
+
+  async handleScopeInput() {
+    const scopeInput = document.getElementById("scopeInput");
+    const scopes=this.validateInput(scopeInput);
+    console.log("Final input scopes",scopes);
+    scopes.push("openid");
+    scopes.push("offline_access");
+    const authUrl = await this.oauthClient.startAuthFlow(scopes);
+    window.location.href = authUrl;
+  }
+
+  validateInput(scopeInput) {
+    this.hideError();
+
+    // Get the input value and trim whitespace
+    const input = scopeInput.value.trim();
+
+    // Check if input is empty
+    if (!input) {
+      this.showError("Please enter scopes");
+      return false;
+    }
+
+    // Split the input by commas
+    const inputScopes = input.split(",").map((scope) => scope.trim());
+
+    console.log("inputscopes",inputScopes.join(","));
+    
+
+    // Check if there are actual values after splitting
+    if (inputScopes.length === 0) {
+      this.showError("Please enter comma-separated scopes");
+      return ;
+    }
+
+    // Check for empty values between commas
+    if (inputScopes.some((scope) => scope === "")) {
+      this.showError(
+        "Invalid format. Please use proper comma separation without empty values"
+      );
+      return false;
+    }
+
+    // Check if all scopes are valid
+    const invalidScopes = inputScopes.filter(
+      (scope) => !config.scope.includes(scope)
+    );
+    if (invalidScopes.length > 0) {
+      this.showError(
+        `Invalid scope(s): ${invalidScopes.join(
+          ", "
+        )}. Allowed scopes are: ${allowedScopes.join(", ")}`
+      );
+      return false;
+    }
+
+    // If all validations pass
+    console.log("Valid scopes: " + inputScopes.join(", "));
+    return inputScopes;
   }
 
   /**
@@ -164,8 +232,6 @@ class OAuthDemo {
       this.startLoader();
       const userInfo = await this.oauthClient.getUserInfo(accessToken);
       console.log(userInfo);
-      
-      
 
       const loginSection = document.getElementById("loginSection");
       const userInfoSection = document.getElementById("userInfo");

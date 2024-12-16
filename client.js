@@ -92,14 +92,15 @@ class OAuthClient {
    * @returns {Promise<string>} Authorization URL
    * @throws {OAuthError} When authorization fails
    */
-  async startAuthFlow() {
+  async startAuthFlow(scopes=null) {
+    const requiredScopes=scopes || this.config.scope;
     const codeChallenge = await this.generateCodeChallenge(this.codeVerifier);
 
     const params = new URLSearchParams({
       response_type: "code",
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      scope: this.config.scope.join(" "),
+      scope: requiredScopes.join(" "),
       state: this.state,
       code_challenge: codeChallenge,
       code_challenge_method: "S256",
