@@ -33,6 +33,7 @@ class OAuthDemo {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
+    const error = urlParams.get("error");
 
     // checking if user is already logged in
     const hasAccessToken =
@@ -48,8 +49,10 @@ class OAuthDemo {
       "access token expired?",
       CookieManager.isExpired("access_token")
     );
-
-    if (code && state) {
+    if(error && error==="access_denied"){
+      this.showError("Please provide profile and email scope");
+    }
+    else if (code && state) {
       this.handleCallback({ code, state });
     } else if (hasAccessToken) {
       this.showUserInfo();
@@ -89,9 +92,9 @@ class OAuthDemo {
    * @param {string} params.state - State parameter for CSRF protection
    */
   async handleCallback(params) {
+    this.startLoader();
     console.log("in handleCallback");
     try {
-      this.startLoader();
       const tokens = await this.oauthClient.handleCallback(params);
       this.saveTokens(tokens);
       this.showUserInfo();
@@ -150,6 +153,8 @@ class OAuthDemo {
     console.log("in showUserInfo");
 
     const accessToken = CookieManager.getCookie("access_token");
+    console.log("Access token", accessToken);
+
     if (!accessToken) {
       this.showError("No access token found");
       return;
@@ -158,6 +163,9 @@ class OAuthDemo {
     try {
       this.startLoader();
       const userInfo = await this.oauthClient.getUserInfo(accessToken);
+      console.log(userInfo);
+      
+      
 
       const loginSection = document.getElementById("loginSection");
       const userInfoSection = document.getElementById("userInfo");
